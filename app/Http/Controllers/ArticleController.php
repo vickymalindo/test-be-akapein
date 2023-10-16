@@ -13,14 +13,50 @@ class ArticleController extends Controller
     public function index()
     {
         //
+        $articles = Article::all();
+
+        if (sizeof($articles) === 0) {
+            return response()->json([
+              'message' => 'Failed or Empty Articles',
+              'status' => 400,
+            ]);
+          }
+    
+          return response()->json([
+            'message' => 'Success',
+            'status' => 200,
+            'data' => $articles
+          ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         //
+        $request->validate([
+            'title' => 'required|max:50|unique:articles',
+            'body' => 'required',
+            'author' => 'required',
+        ]);
+
+        $article = Article::create([
+            'title' => $request->title,
+            'body' => $request->body,
+            'author' => $request->author,
+        ]);
+
+        if (!$article) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Cannot created data'
+            ], 400);
+        } 
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Article created successfully',
+        ], 200);
     }
 
     /**
@@ -34,9 +70,23 @@ class ArticleController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Article $article)
+    public function show($id)
     {
         //
+        $article = Article::find($id);
+
+        if (!$article) {
+          return response()->json([
+            'message' => 'article not found',
+            'status' => 400,
+          ]);
+        }
+
+        return response()->json([
+            'message' => 'article not found',
+            'data' => $article,
+            'status' => 200,
+        ]);
     }
 
     /**
@@ -50,16 +100,54 @@ class ArticleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Article $article)
+    public function update(Request $request, $id)
     {
         //
+        // $request->validate([
+        //     'title' => 'required|max:50|unique:articles',
+        //     'body' => 'required',
+        //     'author' => 'required',
+        // ]);
+
+        $article = Article::find($id);
+
+        if(!$article) {
+          return response()->json([
+            'message' => 'article cannot find',
+            'status' => 400,
+          ]);
+        }
+
+        $data = $article->update([
+          $article->title => $request->title,
+          $article->body => $request->body,
+          $article->author => $request->author
+        ]);
+
+        if (!$data) {
+          return response()->json([
+            'message' => 'article cannot updated',
+            'status' => 400,
+          ]);
+        }
+          return response()->json([
+            'message' => 'article successfully updated',
+            'status' => 200,
+          ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Article $article)
+    public function destroy($id)
     {
         //
+        $article = Article::find($id);
+        $article->delete();
+
+        return response()->json([
+          'message' => 'delete successfully',
+          'status' => 200
+        ]);
     }
 }
