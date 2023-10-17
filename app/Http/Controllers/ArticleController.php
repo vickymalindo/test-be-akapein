@@ -4,9 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
+use JWTAuth;
 
 class ArticleController extends Controller
 {
+
+    protected $user;
+ 
+    public function __construct()
+    {
+        $this->user = JWTAuth::parseToken()->authenticate();
+    }
     /**
      * Display a listing of the resource.
      */
@@ -35,6 +43,13 @@ class ArticleController extends Controller
     public function create(Request $request)
     {
         //
+        $level = $this->user->level;
+        if($level != 'admin') {
+           return response()->json([
+                'message' => 'Forbidden'
+            ], 400);
+        }
+
         $request->validate([
             'title' => 'required|max:50|unique:articles',
             'body' => 'required',
@@ -83,7 +98,7 @@ class ArticleController extends Controller
         }
 
         return response()->json([
-            'message' => 'article not found',
+            'message' => 'article found',
             'data' => $article,
             'status' => 200,
         ]);
@@ -103,11 +118,12 @@ class ArticleController extends Controller
     public function update(Request $request, $id)
     {
         //
-        // $request->validate([
-        //     'title' => 'required|max:50|unique:articles',
-        //     'body' => 'required',
-        //     'author' => 'required',
-        // ]);
+        $level = $this->user->level;
+        if($level != 'admin') {
+           return response()->json([
+                'message' => 'Forbidden'
+            ], 400);
+        }
 
         $article = Article::find($id);
 
@@ -142,6 +158,12 @@ class ArticleController extends Controller
     public function destroy($id)
     {
         //
+        $level = $this->user->level;
+        if($level != 'admin') {
+           return response()->json([
+                'message' => 'Forbidden'
+            ], 400);
+        }
         $article = Article::find($id);
         $article->delete();
 

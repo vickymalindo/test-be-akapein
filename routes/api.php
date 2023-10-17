@@ -31,10 +31,21 @@ Route::group([
     Route::post('me', [AuthController::class, 'me']);
 });
 
-Route::prefix('article')->group(function () {
+Route::group([
+  'middleware' => 'jwt.verify',
+  'prefix' => 'article'
+], function ($router) {
     Route::get('all', [ArticleController::class, 'index']);
     Route::post('create', [ArticleController::class, 'create']);
     Route::delete('delete/{id}', [ArticleController::class, 'destroy']);
     Route::get('show/{id}', [ArticleController::class, 'show']);
     Route::put('update/{id}', [ArticleController::class, 'update']);
 });
+
+// Route::prefix('article')->group(function () {
+//     Route::get('all', [ArticleController::class, 'index']);
+//     Route::post('create', [ArticleController::class, 'create']);
+//     Route::delete('delete/{id}', [ArticleController::class, 'destroy']);
+//     Route::get('show/{id}', [ArticleController::class, 'show']);
+//     Route::put('update/{id}', [ArticleController::class, 'update']);
+// });
